@@ -10,7 +10,7 @@ class Forensics:
         self.disk_images = self.find_images()
         self.choosen_image = None if not self.disk_images else self.disk_images[0]
         self.options = {
-            '1': self.identify_os,  # Placeholder for actual function
+            '1': self.identify_os, 
             '2': self.stub_function,  # Placeholder for actual function
             '3': self.stub_function,  # Placeholder for actual function
             '4': self.stub_function,  # Placeholder for actual function
@@ -46,32 +46,43 @@ Please choose an option:
         if self.choosen_image is None:
             print("No disk image selected.")
             return
-        
+
         try:
-            # Open the disk image
             img = pytsk3.Img_Info(self.choosen_image)
-            # Open the file system
             fs = pytsk3.FS_Info(img)
-            
-            # Define paths that could give us a hint about the OS
-            paths_to_check = {
-                'Windows': ['/Windows/System32/config', '/Windows/System32'],
-                'Linux': ['/etc/os-release', '/etc/issue'],
-                # Add other OS-specific paths here
+
+            # Get the file system type from the image
+            fs_type = fs.info.ftype
+
+            # File system type constants mapping from TSK
+            fs_type_str_mapping = {
+                pytsk3.TSK_FS_TYPE_NTFS: 'NTFS',
+                pytsk3.TSK_FS_TYPE_FAT12: 'FAT12',
+                pytsk3.TSK_FS_TYPE_FAT16: 'FAT16',
+                pytsk3.TSK_FS_TYPE_FAT32: 'FAT32',
+                pytsk3.TSK_FS_TYPE_EXT2: 'EXT2',
+                pytsk3.TSK_FS_TYPE_EXT3: 'EXT3',
+                pytsk3.TSK_FS_TYPE_EXT4: 'EXT4',
+                pytsk3.TSK_FS_TYPE_HFS: 'HFS',
+                # Add other file system types as needed
             }
-            
-            # Check each path for each OS type
-            for os_name, paths in paths_to_check.items():
-                for path in paths:
-                    try:
-                        f = fs.open_dir(path=path)
-                    except IOError:
-                        continue
-                    else:
-                        print(f"Found {path}. This is likely a {os_name} system.")
-                        return  # Exit the function if OS is identified
-            
-            print("\nOperating system could not be identified.")
+
+            fs_type_str = fs_type_str_mapping.get(fs_type, "Unknown")
+
+            os_identifier = {
+                'Windows': ['NTFS', 'FAT12', 'FAT16', 'FAT32'],
+                'Linux': ['EXT2', 'EXT3', 'EXT4'],
+                'macOS': ['HFS', 'HFS+']
+            }
+
+            # Attempt to match the file system type to an OS
+            identified_os = "Unknown"
+            for os_name, identifiers in os_identifier.items():
+                if fs_type_str in identifiers:
+                    identified_os = os_name
+                    break
+
+            print(f"Identified OS: {identified_os}, FS Type: {fs_type_str}")
 
         except IOError as e:
             print(f"Cannot open image or filesystem. Error: {e}")
