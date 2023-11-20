@@ -130,23 +130,29 @@ def encode_pdf_base64(input_pdf, output_pdf, password):
             writer.write(output_file)
 
 
-def generate_directory_table(fs):
+def generate_directory_table(fs, encode_base64=False):
     """
-    Generates a table of directory contents from a file system.
+    Generates a table of directory contents from a file system, optionally encoding data in base64.
 
     :param fs: File system object.
-    :return: A table with directory contents.
+    :param encode_base64: Boolean flag to determine if data should be encoded in base64.
+    :return: A table with directory contents, encoded in base64 if specified.
     """
     table = [["Name", "Type", "Size", "Create Date", "Modify Date"]]
     root_dir = fs.open_dir(path="/")
     for f in root_dir:
         if not f.info or not f.info.meta or not f.info.name:
             continue
+
         name = f.info.name.name
+        if encode_base64:
+            # Encode the name to base64 if the flag is True
+            name = base64.b64encode(name.encode()).decode()
+
         f_type = "DIR" if f.info.meta.type == pytsk3.TSK_FS_META_TYPE_DIR else "FILE"
-        size = f.info.meta.size
-        create = f.info.meta.crtime
-        modify = f.info.meta.mtime
+        size = str(f.info.meta.size)
+        create = str(f.info.meta.crtime)
+        modify = str(f.info.meta.mtime)
         table.append([name, f_type, size, create, modify])
     return table
 
