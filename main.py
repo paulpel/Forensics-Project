@@ -1,12 +1,13 @@
 import os
 import sys
+import pyewf
 import pytsk3
 
 class Forensics:
 
     def __init__(self) -> None:
         self.disk_path = "DiskImages"
-        self.file_formats = ["E01", "dmg"]
+        self.file_formats = ["E01", "dmg", "001", "raw"]
         self.disk_images = self.find_images()
         self.choosen_image = None if not self.disk_images else self.disk_images[0]
         self.options = {
@@ -48,7 +49,9 @@ Please choose an option:
             return
 
         try:
-            img = pytsk3.Img_Info(self.choosen_image)
+            ewf_handle = pyewf.handle()
+            ewf_handle.open(self.choosen_image)
+            img = pytsk3.Img_Info(ewf_handle)
             fs = pytsk3.FS_Info(img)
 
             # Get the file system type from the image
