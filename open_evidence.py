@@ -9,6 +9,8 @@ from reportlab.lib.pagesizes import letter
 from reportlab.platypus import SimpleDocTemplate, Table, TableStyle
 from reportlab.lib import colors
 from PyPDF2 import PdfReader, PdfWriter
+from datetime import datetime
+
 
 class EWFImgInfo(pytsk3.Img_Info):
     """
@@ -47,13 +49,15 @@ class EWFImgInfo(pytsk3.Img_Info):
         """
         return self._ewf_handle.get_media_size()
 
-def main(image, img_type, offset):
+def main(image, img_type, password, offset=None, encode_base64=True):
     """
     Main function to process the evidence file.
 
     :param image: Path to the evidence file.
     :param img_type: Type of the evidence file (raw or ewf).
+    :param password: Password for PDF encryption.
     :param offset: Byte offset for the partition (optional).
+    :param encode_base64: Boolean flag to determine if data should be encoded in base64.
     """
     print(f"[+] Opening {image}")
     if img_type == "ewf":
@@ -77,13 +81,15 @@ def main(image, img_type, offset):
         print(f"[-] Unable to open FS:\n {e}")
         sys.exit(3)
 
-    directory_table = generate_directory_table(fs)
+    directory_table = generate_directory_table(fs, encode_base64)
     print(tabulate(directory_table, headers="firstrow"))
-    pdf_filename = "directory_table.pdf"
+
+    # Change in PDF file naming
+    date_str = datetime.now().strftime("%Y%m%d")
+    pdf_filename = f"{os.path.splitext(os.path.basename(image))[0]}_{date_str}.pdf"
     create_pdf(directory_table, pdf_filename)
 
-    encoded_pdf_filename = "encoded_directory_table.pdf"
-    password = "YourPassword"
+    encoded_pdf_filename = f"encoded_{pdf_filename}"
     encode_pdf_base64(pdf_filename, encoded_pdf_filename, password)
 
 
@@ -130,7 +136,7 @@ def encode_pdf_base64(input_pdf, output_pdf, password):
             writer.write(output_file)
 
 
-def generate_directory_table(fs, encode_base64=False):
+def generate_directory_table(fs, encode_base64=True):
     """
     Generates a table of directory contents from a file system, optionally encoding data in base64.
 
@@ -145,9 +151,11 @@ def generate_directory_table(fs, encode_base64=False):
             continue
 
         name = f.info.name.name
+        if isinstance(name, str):
+            name = name.encode()
+
         if encode_base64:
-            # Encode the name to base64 if the flag is True
-            name = base64.b64encode(name.encode()).decode()
+            name = base64.b64encode(name).decode()
 
         f_type = "DIR" if f.info.meta.type == pytsk3.TSK_FS_META_TYPE_DIR else "FILE"
         size = str(f.info.meta.size)
@@ -161,12 +169,14 @@ if __name__ == '__main__':
     parser = argparse.ArgumentParser(description="Utility to gather open evidence containers")
     parser.add_argument("EVIDENCE_FILE", help="Evidence file path")
     parser.add_argument("TYPE", help="Type of evidence: raw (dd) or EWF (E01)", choices=("raw", "ewf"))
+    parser.add_argument("-p", "--password", help="Password for PDF encryption", required=True)
     parser.add_argument("-o", "--offset", help="Partition byte offset", type=int)
+    parser.add_argument("-b", "--base64", help="Encode table data in base64", action="store_true")
 
     args = parser.parse_args()
 
     if os.path.exists(args.EVIDENCE_FILE) and os.path.isfile(args.EVIDENCE_FILE):
-        main(args.EVIDENCE_FILE, args.TYPE, args.offset)
+        main(args.EVIDENCE_FILE, args.TYPE, args.password, args.offset, args.base64)
     else:
         print(f"[-] Supplied input file {args.EVIDENCE_FILE} does not exist or is not a file")
         sys.exit(1)

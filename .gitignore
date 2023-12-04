@@ -1,5 +1,7 @@
 **/DiskImages
 **/Ignore
+**/libewf-python-20231119
+**/*.pdf
 
 # Byte-compiled / optimized / DLL files
 __pycache__/
