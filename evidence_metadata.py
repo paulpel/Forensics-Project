@@ -3,7 +3,6 @@ import argparse
 import os
 import pytsk3
 import pyewf
-import sys
 from tabulate import tabulate
 from reportlab.lib.pagesizes import letter
 from reportlab.platypus import SimpleDocTemplate, Table

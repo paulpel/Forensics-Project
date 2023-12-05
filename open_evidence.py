@@ -6,7 +6,7 @@ import pyewf
 import base64
 from tabulate import tabulate
 from reportlab.lib.pagesizes import letter
-from reportlab.platypus import SimpleDocTemplate, Table, TableStyle
+from reportlab.platypus import SimpleDocTemplate, Table
 from reportlab.lib import colors
 from PyPDF2 import PdfReader, PdfWriter
 from datetime import datetime
