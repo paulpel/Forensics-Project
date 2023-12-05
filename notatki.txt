@@ -1,0 +1,7 @@
+uniemoliwić edycje cyfrowo
+zabezpieczyc i opisać dokument
+podpiecie foremost i uzyskanie z niego informacje
+ekstrakcja z obrazow
+ekstrakcja z pdfów [priorytet] - parametr wyszukiwania znaków, będzie podany przez Doktora
+dokumentacja technicza
+dzialający projekt/test - dokumentacja techniczna
