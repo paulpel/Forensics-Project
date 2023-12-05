@@ -6,13 +6,15 @@ import pyewf
 import sys
 from tabulate import tabulate
 from reportlab.lib.pagesizes import letter
-from reportlab.platypus import SimpleDocTemplate, Table, TableStyle
-from reportlab.lib import colors
+from reportlab.platypus import SimpleDocTemplate, Table
 from PyPDF2 import PdfReader, PdfWriter
 from datetime import datetime
 
 
-__description__ = "Script to process and extract data from forensic evidence containers."
+__description__ = (
+    "Script to process and extract data from forensic evidence containers."
+)
+
 
 class EWFImgInfo(pytsk3.Img_Info):
     """
@@ -24,8 +26,7 @@ class EWFImgInfo(pytsk3.Img_Info):
 
     def __init__(self, ewf_handle):
         self._ewf_handle = ewf_handle
-        super(EWFImgInfo, self).__init__(url="",
-                                         type=pytsk3.TSK_IMG_TYPE_EXTERNAL)
+        super(EWFImgInfo, self).__init__(url="", type=pytsk3.TSK_IMG_TYPE_EXTERNAL)
 
     def close(self):
         """
@@ -52,6 +53,7 @@ class EWFImgInfo(pytsk3.Img_Info):
         """
         return self._ewf_handle.get_media_size()
 
+
 def main(image, img_type, part_type, password):
     """
     Main function to process the evidence file.
@@ -66,7 +68,7 @@ def main(image, img_type, part_type, password):
             filenames = pyewf.glob(image)
         except IOError as e:
             print("[-] Invalid EWF format:\n {}".format(e))
-            sys.exit(2)
+            return
 
         ewf_handle = pyewf.handle()
         ewf_handle.open(filenames)
@@ -87,7 +89,7 @@ def main(image, img_type, part_type, password):
             fs = pytsk3.FS_Info(img_info)
     except IOError as e:
         print("[-] Unable to read partition table or file system:\n {}".format(e))
-        sys.exit(3)
+        return
 
     if volume:
         part_metadata(volume)
@@ -109,6 +111,7 @@ def main(image, img_type, part_type, password):
     pdf_filename = f"meta_{os.path.splitext(os.path.basename(image))[0]}_{date_str}.pdf"
     create_encrypted_pdf(data, pdf_filename, password)
 
+
 def create_encrypted_pdf(data, filename, password):
     pdf = SimpleDocTemplate(filename, pagesize=letter)
     elements = []
@@ -119,6 +122,7 @@ def create_encrypted_pdf(data, filename, password):
     pdf.build(elements)
 
     encrypt_pdf(filename, password)
+
 
 def encrypt_pdf(input_pdf, password):
     reader = PdfReader(input_pdf)
@@ -131,6 +135,7 @@ def encrypt_pdf(input_pdf, password):
 
     with open(input_pdf, "wb") as output_file:
         writer.write(output_file)
+
 
 def part_metadata(vol):
     """
@@ -149,6 +154,7 @@ def part_metadata(vol):
     print("-" * 20)
     print(tabulate(table, headers="firstrow"))
     return table
+
 
 def e01_metadata(e01_image):
     """
@@ -169,17 +175,25 @@ def e01_metadata(e01_image):
     print("Total Size: {}".format(e01_image.get_media_size()))
     return e01_image
 
-if __name__ == '__main__':
+
+if __name__ == "__main__":
     parser = argparse.ArgumentParser(description=__description__)
     parser.add_argument("EVIDENCE_FILE", help="Evidence file path")
     parser.add_argument("TYPE", help="Type of Evidence", choices=("raw", "ewf"))
-    parser.add_argument("-p", help="Partition Type", choices=("DOS", "GPT", "MAC", "SUN"))
+    parser.add_argument(
+        "-p", help="Partition Type", choices=("DOS", "GPT", "MAC", "SUN")
+    )
     parser.add_argument("-f", "--filename", help="Output PDF filename", required=True)
-    parser.add_argument("-pwd", "--password", help="Password for the PDF", required=True)
+    parser.add_argument(
+        "-pwd", "--password", help="Password for the PDF", required=True
+    )
     args = parser.parse_args()
 
     if os.path.exists(args.EVIDENCE_FILE) and os.path.isfile(args.EVIDENCE_FILE):
         main(args.EVIDENCE_FILE, args.TYPE, args.p)
     else:
-        print("[-] Supplied input file {} does not exist or is not a file".format(args.EVIDENCE_FILE))
-        sys.exit(1)
+        print(
+            "[-] Supplied input file {} does not exist or is not a file".format(
+                args.EVIDENCE_FILE
+            )
+        )
