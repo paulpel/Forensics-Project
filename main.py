@@ -52,7 +52,9 @@ class Forensics:
             choice = int(choice)
             if 1 <= choice <= len(self.disk_images):
                 self.choosen_image = list(self.disk_images.values())[choice - 1]
-                print(f"\nSelected disk image: {list(self.disk_images.keys())[choice - 1]}")
+                print(
+                    f"\nSelected disk image: {list(self.disk_images.keys())[choice - 1]}"
+                )
             elif choice == len(self.disk_images) + 1:
                 return
             else:
@@ -79,8 +81,12 @@ class Forensics:
         print("[+] Extracting information about documents...")
         print(self.choosen_image)
 
-        if not self.choosen_image or not self.choosen_image.endswith((".E01", ".raw", ".dd")):
-            print("[-] Invalid or no image selected. Choose a valid E01 or raw image first.")
+        if not self.choosen_image or not self.choosen_image.endswith(
+            (".E01", ".raw", ".dd")
+        ):
+            print(
+                "[-] Invalid or no image selected. Choose a valid E01 or raw image first."
+            )
             self.choose_disk_image(change=False)
             return
 
@@ -97,8 +103,12 @@ class Forensics:
     def extract_metadata(self):
         print("[+] Extracting metadata from the disk image...")
 
-        if not self.choosen_image or not self.choosen_image.endswith((".E01", ".raw", ".dd")):
-            print("[-] Invalid or no image selected. Choose a valid E01 or raw image first.")
+        if not self.choosen_image or not self.choosen_image.endswith(
+            (".E01", ".raw", ".dd")
+        ):
+            print(
+                "[-] Invalid or no image selected. Choose a valid E01 or raw image first."
+            )
             self.choose_disk_image(change=False)
             return
 
