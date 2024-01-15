@@ -15,5 +15,4 @@ Zestaw narzędzi przeznaczony do analizy obrazów dyskowych w celach kryminalist
 
 ## Zależności
 - Python 3.x
-- Biblioteki: pytsk3, pyewf, PyPDF2, fitz itp. (Lista wszystkich odpowiednich bibliotek i ich wersji.)
-
+- Biblioteki: pytsk3, pyewf, PyPDF2
